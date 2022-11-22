@@ -4,20 +4,20 @@ const mongoose = require("mongoose")
 const buyerSchema = new mongoose.Schema({
     Buyer_name : {
         type: String,
-        required: true,
+        
     },
     Buyer_Delivery_Address: { 
         type: {
             address_line: {type: String} , 
             City: {type:String}, 
-            Postal_Code: {type:String}, 
+            Postal_Code: {type:Number}, 
             Country: {type: String},
         },
-        required: true,
+        
     },
     Buyer_Phone: {
         type: Number,
-        required: true,
+        
     },
     Buyer_Cart: { 
         type: { 
@@ -26,7 +26,7 @@ const buyerSchema = new mongoose.Schema({
             Product_quantity: {type:Number}, 
             Product_Price: {type:Number} 
         },
-        required: true,
+        
     },
 })
 

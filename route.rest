@@ -1,0 +1,11 @@
+POST  http://localhost:3000/buyers
+
+Content-Type: :application/json
+
+{
+    "Buyer_name": "Sankalp",
+    "Buyer_Delivery_Address": {"address_line": "2429","City":"Bhavnagar" , "Postal_Code":364002 ,"Country":"India"},
+    "Buyer_Phone": 123456789,
+    
+
+}
