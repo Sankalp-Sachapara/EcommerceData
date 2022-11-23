@@ -1,6 +1,13 @@
 const mongoose = require("mongoose")
 
 
+const sellerProductschema = new mongoose.Schema({ 
+    Product_ID: {type:Number}, 
+    Product_Name: {type:String} , 
+    Product_Quantity: {type:Number}, 
+    Product_Price: {type:Number} 
+})
+
 const sellerSchema = new mongoose.Schema({
     Seller_name : {
         type: String,
@@ -10,7 +17,7 @@ const sellerSchema = new mongoose.Schema({
         type: {
             address_line: {type: String} , 
             City: {type:String}, 
-            Postal_Code: {type:String}, 
+            Postal_Code: {type:Number}, 
             Country: {type: String},
         },
         required: true,
@@ -19,15 +26,7 @@ const sellerSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    Seller_Products: { 
-        type: { 
-            Product_ID: {type:Number}, 
-            Product_Name: {type:String} , 
-            Product_quantity: {type:Number}, 
-            Product_Price: {type:Number} 
-        },
-        required: true,
-    },
+    Seller_Products: [sellerProductschema],
 })
 
 module.exports = mongoose.model('Seller',sellerSchema)

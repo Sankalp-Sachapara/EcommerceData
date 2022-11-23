@@ -1,5 +1,11 @@
 const mongoose = require("mongoose")
 
+const buyerCartSchema= new mongoose.Schema({ 
+    Product_ID: {type: Number}, 
+    Product_Name: {type:String} , 
+    Product_quantity: {type:Number}, 
+    Product_Price: {type:Number} 
+})
 
 const buyerSchema = new mongoose.Schema({
     Buyer_name : {
@@ -19,15 +25,7 @@ const buyerSchema = new mongoose.Schema({
         type: Number,
         
     },
-    Buyer_Cart: { 
-        type: { 
-            Product_ID: {type: Number}, 
-            Product_Name: {type:String} , 
-            Product_quantity: {type:Number}, 
-            Product_Price: {type:Number} 
-        },
-        
-    },
+    Buyer_Cart: [buyerCartSchema]
 })
 
 module.exports = mongoose.model('Buyer',buyerSchema)

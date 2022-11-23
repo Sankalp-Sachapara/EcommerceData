@@ -1,18 +1,18 @@
 const express = require('express')
-const BuyerRoute = express.Router()
-const Buyer = require('../models/Buyer_model')
+const SellerRoute = express.Router()
+const Seller = require('../models/Seller_model')
 
 
 /**
  * @swagger
  *  components:
  *      schemas:
- *          Buyer:
+ *          Seller:
  *             type: object
  *             properties:
- *                 Buyer_name:
+ *                 Seller_name:
  *                     type: string
- *                 Buyer_Delivery_Address:
+ *                 Seller_Address:
  *                     type: object
  *                     properties:
  *                         address_line:
@@ -23,13 +23,13 @@ const Buyer = require('../models/Buyer_model')
  *                             type: number
  *                         Country:
  *                             type: string
- *                 Buyer_Phone:
+ *                 Seller_Phone:
  *                      type: number
- *                 Buyer_Cart:
+ *                 Seller_Products:
  *                      type: array
  *                      items:
- *                         type: object
- *                         properties:
+ *                          type: object
+ *                          properties:
  *                             Product_ID:
  *                                 type: number
  *                             Product_Name:
@@ -45,7 +45,7 @@ const Buyer = require('../models/Buyer_model')
 
 /**
  * @swagger
- * /buyer:
+ * /seller:
  *  get:
  *      summary: The get data from database  
  *      description: displaying all data from database
@@ -57,18 +57,18 @@ const Buyer = require('../models/Buyer_model')
  *                      schema:
  *                          type: array
  *                          items:
- *                              $ref: '#/components/schemas/Buyer'
+ *                              $ref: '#/components/schemas/Seller'
  * 
  */ 
-BuyerRoute.get('/', async (req,res) => {
-    const buyers =  await Buyer.find()
-    res.json(buyers)
-    // res.send("welcome")
+SellerRoute.get('/', async (req,res) => {
+    const seller =  await Seller.find()
+    res.json(seller)
+    
 })
 
 /**
  * @swagger
- * /buyer/{id}:
+ * /seller/{id}:
  *  get:
  *      summary: The get specific id data from database  
  *      description: displaying all data from database
@@ -88,27 +88,27 @@ BuyerRoute.get('/', async (req,res) => {
  *                      schema:
  *                          type: array
  *                          items:
- *                              $ref: '#/components/schemas/Buyer'
+ *                              $ref: '#/components/schemas/Seller'
  * 
  */ 
 
 // getting one record
-BuyerRoute.get('/:id', getById, async(req,res) => {
-    res.json(res.buyer)  
+SellerRoute.get('/:id', getById, async(req,res) => {
+    res.json(res.seller)  
 })
 
 /**
  * @swagger
- * /buyer/newUser:
+ * /seller/newUser:
  *  post:
  *      summary: add the data in database  
- *      description: Add the data in database
+ *      description: Add the data in database warning while adding poducts array do not add "," on last object or there will be an error
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/Buyer'
+ *                      $ref: '#/components/schemas/Seller'
  *      responses:
  *          200:
  *              description: Added Successfully
@@ -116,24 +116,23 @@ BuyerRoute.get('/:id', getById, async(req,res) => {
  */ 
 
 // creating one record
-BuyerRoute.post('/newUser', async (req,res) => {
+SellerRoute.post('/newUser', async (req,res) => {
     
-   
-    const buyer = new Buyer({
-        Buyer_name: req.body.Buyer_name,
-        Buyer_Delivery_Address: req.body.Buyer_Delivery_Address,
-        Buyer_Phone: req.body.Buyer_Phone,
-        Buyer_Cart: req.body.Buyer_Cart
+    const seller = new Seller({
+        Seller_name: req.body.Seller_name,
+        Seller_Address: req.body.Seller_Address,
+        Seller_Phone: req.body.Seller_Phone,
+        Seller_Products: req.body.Seller_Products
     })
 
-    const newBuyer = await buyer.save()
-    res.json(newBuyer);
+    const newSeller = await seller.save()
+    res.json(newSeller);
     
 })
 
 /**
  * @swagger
- * /buyer/{id}:
+ * /seller/{id}:
  *  put:
  *      summary: Update the data in database  
  *      description: updating the data in database
@@ -149,7 +148,7 @@ BuyerRoute.post('/newUser', async (req,res) => {
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/Buyer'
+ *                      $ref: '#/components/schemas/Seller'
  *      responses:
  *          200:
  *              description: updated Successfully
@@ -158,26 +157,26 @@ BuyerRoute.post('/newUser', async (req,res) => {
  *                      schema:
  *                          type: array
  *                          items:
- *                              $ref: '#/components/schemas/Buyer'
+ *                              $ref: '#/components/schemas/Seller'
  *              
  */
 
 // updating one record
-BuyerRoute.put('/:id',getById, async (req,res) => {
-    res.buyer.Buyer_name = req.body.Buyer_name
-    res.buyer.Buyer_Delivery_Address = req.body.Buyer_Delivery_Address,
-    res.buyer.Buyer_Phone = req.body.Buyer_Phone,
-    res.buyer.Buyer_Cart =req.body.Buyer_Cart
+SellerRoute.put('/:id',getById, async (req,res) => {
+    res.seller.Seller_name = req.body.Seller_name
+    res.seller.Seller_Address = req.body.Seller_Address,
+    res.seller.Seller_Phone = req.body.Seller_Phone,
+    res.seller.Seller_Products =req.body.Seller_Products
     
     // other patch to be added
-    const updatedbuyer = await res.buyer.save()
-    res.json(updatedbuyer)
+    const updatedSeller = await res.seller.save()
+    res.json(updatedSeller)
     
 })
 
 /**
  * @swagger
- * /buyer/{id}:
+ * /seller/{id}:
  *  delete:
  *      summary: delete the data in database  
  *      description: for deleting the data in database
@@ -193,7 +192,7 @@ BuyerRoute.put('/:id',getById, async (req,res) => {
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/Buyer'
+ *                      $ref: '#/components/schemas/Seller'
  *      responses:
  *          200:
  *              description: deleted Successfully
@@ -202,20 +201,20 @@ BuyerRoute.put('/:id',getById, async (req,res) => {
  */
 
 // deleting one record
-BuyerRoute.delete('/:id',getById, async (req,res) => {
-    res.buyer.remove()
-    res.json("Deleted buyer")
+SellerRoute.delete('/:id',getById, async (req,res) => {
+    res.seller.remove()
+    res.json("Deleted seller")
     
 })
 
 async function getById(req,res,next){
-    let buyer = await Buyer.findById(req.params.id)
-    if(buyer == null){
-        return res.json({message : 'no buyer'})
+    let seller = await Seller.findById(req.params.id)
+    if(seller == null){
+        return res.json({message : 'no seller'})
     }
 
-    res.buyer = buyer
+    res.seller = seller
     next()
 }
 
-module.exports = {BuyerRoute}
+module.exports = {SellerRoute}

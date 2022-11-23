@@ -121,12 +121,12 @@
 // })
 
 // // // getting all record
-// // /**
-// //  * @swagger
-// //  *  components:
-// //  *      schemas: buyer_schema
-// //  *       
-// //  */
+// /**
+//  * @swagger
+//  *  components:
+//  *      schemas: buyer_schema
+//  *       
+//  */
 
 // /**
 //  * @swagger
@@ -312,3 +312,40 @@
 //  *          200:
 //  *              description: To test get method
 //  */
+
+
+// './routes/*.js'
+
+
+// {
+//     "id": "A1",
+//     "Buyer_name": "shreya",
+//     "Buyer_Delivery_Address": {
+//       "address_line": "B/7",
+//       "City": "bhavnagr",
+//       "Postal_Code": 364002,
+//       "Country": "india"
+//     },
+//     "Buyer_Cart": {
+//       "Product_ID": "P6",
+//       "Product_Name": "oranges",
+//       "Product_Quantity": 10,
+//       "Product_Price": 10
+//     }
+//   }
+
+
+// res.buyer.Buyer_name = req.body.Buyer_name;
+
+//     res.buyer.body.Buyer_Delivery_Address.address_line = req.body.Buyer_Delivery_Address.address_line;
+//     res.buyer.body.Buyer_Delivery_Address.City = req.body.Buyer_Delivery_Address.City;
+//     res.buyer.body.Buyer_Delivery_Address.Postal_Code = req.body.Buyer_Delivery_Address.Postal_Code;
+//     res.buyer.body.Buyer_Delivery_Address.Country = req.body.Buyer_Delivery_Address.Country;
+
+//     res.buyer.body.Buyer_Phone = req.body.Buyer_Phone;
+
+//     res.buyer.body.Buyer_Cart.Product_ID =req.body.Buyer_Cart.Product_ID;
+//     res.buyer.body.Buyer_Cart.Product_Name =req.body.Buyer_Cart.Product_Name;
+//     res.buyer.body.Buyer_Cart.Product_Quantity =req.body.Buyer_Cart.Product_Quantity;
+//     res.buyer.body.Buyer_Cart.Product_Price =req.body.Buyer_Cart.Product_Price;
+    

@@ -2,10 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const swaggerjsdocs = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express")
-const m2s = require('mongoose-to-swagger');
 const bodyParser = require("body-parser");
 const {BuyerRoute} = require('./routes/buyers.js');
-const Buyer = require('./models/Buyer_model.js')
+const {SellerRoute} = require('./routes/sellers.js')
+
 
 
 
@@ -29,17 +29,16 @@ const options ={
             title:"Ecommerce practice project",
             version:"1.0.0"
         },
-        // components:{
-        //     schemas: {
-        //         "buyer_mod":{
-        //             $ref: buyer_schema
-        // }}},
+       
         servers:[
             {
                url: 'http://localhost:3000/'
-            }],
+            }
+        
+            ],
+        
         },
-        apis:['App.js','./routes/*.js']
+        apis:['App.js','./routes/*.js'] //'./routes/*.js'
     }
 
 
@@ -48,6 +47,7 @@ const swaggerSpec = swaggerjsdocs(options)
 
 app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 app.use('/buyer',BuyerRoute)
+app.use('/seller',SellerRoute)
 
 /**
  * @swagger
