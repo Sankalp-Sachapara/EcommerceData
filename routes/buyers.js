@@ -1,7 +1,10 @@
 const express = require('express')
 const BuyerRoute = express.Router()
+const bcrypt = require ('bcrypt')
 const Buyer = require('../models/Buyer_model')
+const jwt = require("jsonwebtoken")
 
+jwtkey = "password"
 
 /**
  * @swagger
@@ -11,6 +14,10 @@ const Buyer = require('../models/Buyer_model')
  *             type: object
  *             properties:
  *                 Buyer_name:
+ *                     type: string
+ *                 Buyer_Email:
+ *                     type: string
+ *                 Buyer_Password:
  *                     type: string
  *                 Buyer_Delivery_Address:
  *                     type: object
@@ -25,19 +32,6 @@ const Buyer = require('../models/Buyer_model')
  *                             type: string
  *                 Buyer_Phone:
  *                      type: number
- *                 Buyer_Cart:
- *                      type: array
- *                      items:
- *                         type: object
- *                         properties:
- *                             Product_ID:
- *                                 type: number
- *                             Product_Name:
- *                                 type: string
- *                             Product_Quantity:
- *                                 type: number
- *                             Product_Price:
- *                                 type: number 
  */
 
 
@@ -60,7 +54,7 @@ const Buyer = require('../models/Buyer_model')
  *                              $ref: '#/components/schemas/Buyer'
  * 
  */ 
-BuyerRoute.get('/', async (req,res) => {
+BuyerRoute.get('/', verifyToken, async (req,res) => {
     const buyers =  await Buyer.find()
     res.json(buyers)
     // res.send("welcome")
@@ -97,6 +91,11 @@ BuyerRoute.get('/:id', getById, async(req,res) => {
     res.json(res.buyer)  
 })
 
+
+
+
+/*******************************************************************************/
+
 /**
  * @swagger
  * /buyer/newUser:
@@ -121,15 +120,28 @@ BuyerRoute.post('/newUser', async (req,res) => {
    
     const buyer = new Buyer({
         Buyer_name: req.body.Buyer_name,
+        Buyer_Email: req.body.Buyer_Email,
+        Buyer_Password: await bcrypt.hash(req.body.Buyer_Password,10),
         Buyer_Delivery_Address: req.body.Buyer_Delivery_Address,
         Buyer_Phone: req.body.Buyer_Phone,
-        Buyer_Cart: req.body.Buyer_Cart
+        // Buyer_Cart: req.body.Buyer_Cart
     })
 
+    jwt.sign({buyer}, jwtkey,(err,token)=>{
+        res.json({token})
+    })
     const newBuyer = await buyer.save()
-    res.json(newBuyer);
+    // res.json(newBuyer);
     
 })
+/*************************************************************************************************/
+
+
+
+
+
+
+
 
 /**
  * @swagger
@@ -161,6 +173,7 @@ BuyerRoute.post('/newUser', async (req,res) => {
  *                              $ref: '#/components/schemas/Buyer'
  *              
  */
+
 
 // updating one record
 BuyerRoute.put('/:id',getById, async (req,res) => {
@@ -216,6 +229,26 @@ async function getById(req,res,next){
 
     res.buyer = buyer
     next()
+}
+
+async function verifyToken(req,res,next){
+    const bearerHeader = req.headers['authorization'];
+    if(typeof bearerHeader !== 'undefined'){
+        const bearer = bearerHeader.split(" ")[1];
+        
+        jwt.verify(bearer,process.env.ACCESS_TOKEN_SECRET,(err,authdata) =>{
+            if(err){
+                res.json({result:err})
+            }
+            else{ 
+                next()
+            }
+        })
+
+    }
+    else{
+        res.send({"result":"token not provided"})
+    }
 }
 
 module.exports = {BuyerRoute}
