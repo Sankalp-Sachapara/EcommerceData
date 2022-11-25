@@ -10,6 +10,8 @@ const jwt = require("jsonwebtoken")
 const {BuyerRoute} = require('./routes/buyers.js');
 const Buyer = require('./models/Buyer_model')
 const {SellerRoute} = require('./routes/sellers.js')
+const Seller = require('./models/Seller_model')
+const Products = require('./models/Products_model')
 
 const port = process.env.PORT
 
@@ -25,7 +27,6 @@ db.once('open', () => console.log("connected to database"))
 
 app.use(express.json())
 
-// const buyer_schema =  m2s(Buyer)
 
 const options ={
     definition:{
@@ -66,25 +67,11 @@ const swaggerSpec = swaggerjsdocs(options)
 app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 
 
-function generateAccessToken(user) {
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
-    return accessToken
-}
-// refreshTokens
-var refreshTokens = []
-function generateRefreshToken(user) 
-{
-    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "20m"})
-    refreshTokens.push(refreshToken)
-    return refreshToken
-}
-
-
-
-
-
 app.use('/buyer',BuyerRoute)
 app.use('/seller',SellerRoute)
+
+var refreshTokens = []
+
 
 /**
  * @swagger
@@ -96,7 +83,7 @@ app.use('/seller',SellerRoute)
  *          200:
  *              description: To test get method
  */
-app.get('/', (req,res) => {
+app.get('/', async (req,res) => {
     res.send("welcome to site")
 })
 
@@ -112,7 +99,20 @@ app.get('/', (req,res) => {
  *                     type: string
  *                 Password:
  *                      type: string
- *                     
+ *          Product:
+ *             type: object
+ *             properties:
+ *                 Product_name:
+ *                     type: string
+ *                 Product_description:
+ *                     type: string
+ *                 Product_price:
+ *                     type: number
+ *                 Product_rating:
+ *                     type: number
+ *                 Quantity_available:
+ *                     type: number
+ *                      
  */
 
 
@@ -136,24 +136,84 @@ app.get('/', (req,res) => {
 
 
 app.post('/login', async (req,res) => {
+    
+    let seller_user = await Seller.findOne({Seller_Email :req.body.Email})
     let buyer_user = await Buyer.findOne({Buyer_Email :req.body.Email})
-    if (buyer_user == null) res.status(404).send ("User does not exist!")
+    
+    
     if (await bcrypt.compare(req.body.Password, buyer_user.Buyer_Password)) 
-        {
-            //access token
-            const accessToken = generateAccessToken ({buyer_user})
-            //refresh token
-            const refreshToken = generateRefreshToken ({buyer_user})
+        {   
+            
+            
+            //access token for buyer
+            const accessToken = jwt.sign({buyer_user}, process.env.BUYER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
+            //refresh token for seller
+            const refreshToken = jwt.sign({buyer_user}, process.env.BUYER_REFRESH_TOKEN_SECRET, {expiresIn: "20m"})
+            refreshTokens.push(refreshToken)
             res.json ({accessToken: accessToken, refreshToken: refreshToken})
         } 
+    else if (await bcrypt.compare(req.body.Password, seller_user.Seller_Password)) {
+
+            
+            //access token for seller
+            const accessToken = jwt.sign({seller_user}, process.env.SELLER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
+            //refresh token for buyer
+            const refreshToken = jwt.sign({seller_user}, process.env.SELLER_REFRESH_TOKEN_SECRET, {expiresIn: "20m"})
+            refreshTokens.push(refreshToken)
+            res.json ({accessToken: accessToken, refreshToken: refreshToken})
+        
+            }
+    else if (buyer_user == null || seller_user == null) 
+    {
+        
+        res.status(404).send ("User does not exist!")
+    }
     else {
     res.status(401).send("Password Incorrect!")
     }
    
 })
+
+/**
+ * @swagger
+ * /products:
+ *  get:
+ *      summary: The get product data from database  
+ *      description: displaying all  product data from database
+ *      responses:
+ *          200:
+ *              description: successfully  displaying all product data from database
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: array
+ *                          items:
+ *                              $ref: '#/components/schemas/Product'
+ * 
+ */ 
+
+app.get('/products', async (req,res) => { 
+    const p =  await Products.find()
+    res.json(p)
+    
+})
+
+/**
+ * @swagger
+ * /logout:
+ *  delete:
+ *      summary: logout  
+ *      description: delete refresh token and the current user data
+ *      responses:
+ *          200:
+ *              description: successfully  deleted
+ *              
+ * 
+ */ 
+
 app.delete("/logout", (req,res)=>{
     refreshTokens = refreshTokens.filter( (c) => c != req.body.token)
-    //remove the old refreshToken from the refreshTokens list
+    currentuser = currentuser.filter( (c) => c != req.body)
     res.status(204).send("Logged out!")
     })
 
@@ -161,6 +221,3 @@ app.delete("/logout", (req,res)=>{
 
 
 app.listen(port, () => console.log("Server Started"))
-
-
-

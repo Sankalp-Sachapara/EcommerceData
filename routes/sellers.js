@@ -1,6 +1,10 @@
+require("dotenv").config()
 const express = require('express')
 const SellerRoute = express.Router()
 const Seller = require('../models/Seller_model')
+const Products = require('../models/Products_model')
+const bcrypt = require ('bcrypt')
+const jwt = require("jsonwebtoken")
 
 
 /**
@@ -11,6 +15,10 @@ const Seller = require('../models/Seller_model')
  *             type: object
  *             properties:
  *                 Seller_name:
+ *                     type: string
+ *                 Seller_Email:
+ *                     type: string
+ *                 Seller_Password:
  *                     type: string
  *                 Seller_Address:
  *                     type: object
@@ -25,19 +33,20 @@ const Seller = require('../models/Seller_model')
  *                             type: string
  *                 Seller_Phone:
  *                      type: number
- *                 Seller_Products:
- *                      type: array
- *                      items:
- *                          type: object
- *                          properties:
- *                             Product_ID:
- *                                 type: number
- *                             Product_Name:
- *                                 type: string
- *                             Product_Quantity:
- *                                 type: number
- *                             Product_Price:
- *                                 type: number 
+ *          Product:
+ *             type: object
+ *             properties:
+ *                 Product_name:
+ *                     type: string
+ *                 Product_description:
+ *                     type: string
+ *                 Product_price:
+ *                     type: number
+ *                 Product_rating:
+ *                     type: number
+ *                 Quantity_available:
+ *                     type: number
+ *            
  */
 
 
@@ -60,7 +69,7 @@ const Seller = require('../models/Seller_model')
  *                              $ref: '#/components/schemas/Seller'
  * 
  */ 
-SellerRoute.get('/', async (req,res) => {
+SellerRoute.get('/',verifyToken,async (req,res) => {
     const seller =  await Seller.find()
     res.json(seller)
     
@@ -93,8 +102,12 @@ SellerRoute.get('/', async (req,res) => {
  */ 
 
 // getting one record
-SellerRoute.get('/:id', getById, async(req,res) => {
-    res.json(res.seller)  
+SellerRoute.get('/:id', verifyToken, async(req,res) => {
+    let seller = await Seller.findById(req.params.id)
+    if(seller == null){
+        return res.json({message : 'no seller'})
+    }
+    res.json(seller)  
 })
 
 /**
@@ -120,6 +133,8 @@ SellerRoute.post('/newUser', async (req,res) => {
     
     const seller = new Seller({
         Seller_name: req.body.Seller_name,
+        Seller_Email: req.body.Seller_Email,
+        Seller_Password: await bcrypt.hash(req.body.Seller_Password,10),
         Seller_Address: req.body.Seller_Address,
         Seller_Phone: req.body.Seller_Phone,
         Seller_Products: req.body.Seller_Products
@@ -132,89 +147,60 @@ SellerRoute.post('/newUser', async (req,res) => {
 
 /**
  * @swagger
- * /seller/{id}:
- *  put:
- *      summary: Update the data in database  
- *      description: updating the data in database
- *      parameters:
- *          - in: path
- *            name: id
- *            required: true
- *            description: fetch with id number
- *            schema:
- *              type: string
+ * /seller/newProduct:
+ *  post:
+ *      summary: add the  new Product data in database  
+ *      description: Add the  product data in database 
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/Seller'
+ *                      $ref: '#/components/schemas/Product'
  *      responses:
  *          200:
- *              description: updated Successfully
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: array
- *                          items:
- *                              $ref: '#/components/schemas/Seller'
+ *              description: Added Successfully
  *              
- */
+ */ 
 
-// updating one record
-SellerRoute.put('/:id',getById, async (req,res) => {
-    res.seller.Seller_name = req.body.Seller_name
-    res.seller.Seller_Address = req.body.Seller_Address,
-    res.seller.Seller_Phone = req.body.Seller_Phone,
-    res.seller.Seller_Products =req.body.Seller_Products
+
+SellerRoute.post('/newProduct',verifyToken, async (req,res) => {
     
-    // other patch to be added
-    const updatedSeller = await res.seller.save()
-    res.json(updatedSeller)
+    const product = new Products({
+        Product_name: req.body.Product_name,
+        Product_category: req.body.Product_category,
+        Product_description: req.body.Product_description,
+        Product_price: req.body.Product_price,
+        Quantity_available: req.body.Quantity_available,
+        
+    })
+
+    const newProduct = await product.save()
+    res.json(newProduct);
     
 })
 
-/**
- * @swagger
- * /seller/{id}:
- *  delete:
- *      summary: delete the data in database  
- *      description: for deleting the data in database
- *      parameters:
- *          - in: path
- *            name: id
- *            required: true
- *            description: fetch with id number
- *            schema:
- *              type: string
- *      requestBody:
- *          required: true
- *          content:
- *              application/json:
- *                  schema:
- *                      $ref: '#/components/schemas/Seller'
- *      responses:
- *          200:
- *              description: deleted Successfully
- *              
- *              
- */
 
-// deleting one record
-SellerRoute.delete('/:id',getById, async (req,res) => {
-    res.seller.remove()
-    res.json("Deleted seller")
-    
-})
 
-async function getById(req,res,next){
-    let seller = await Seller.findById(req.params.id)
-    if(seller == null){
-        return res.json({message : 'no seller'})
+
+async function verifyToken(req,res,next){
+    const bearerHeader = req.headers['authorization'];
+    if(typeof bearerHeader !== 'undefined'){
+        const bearer = bearerHeader.split(" ")[1];        
+        jwt.verify(bearer,process.env.SELLER_ACCESS_TOKEN_SECRET,(err,authdata) =>{
+            if(err){
+                res.json({result:err})
+            }
+            else{ 
+                next()
+            }
+        })
+
     }
-
-    res.seller = seller
-    next()
+    else{
+        res.send({"result":"token not provided"})
+    }
 }
+
 
 module.exports = {SellerRoute}

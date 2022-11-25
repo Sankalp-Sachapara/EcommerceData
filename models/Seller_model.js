@@ -13,6 +13,12 @@ const sellerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    Seller_Email : {
+        type: String,
+    },
+    Seller_Password : {
+        type: String,
+    },
     Seller_Address: { 
         type: {
             address_line: {type: String} , 
