@@ -3,6 +3,7 @@ const express = require('express')
 const BuyerRoute = express.Router()
 const bcrypt = require ('bcrypt')
 const Buyer = require('../models/Buyer_model')
+const Orders = require('../models/orders_model')
 
 const jwt = require("jsonwebtoken")
 
@@ -34,34 +35,14 @@ const jwt = require("jsonwebtoken")
  *                         Country:
  *                             type: string
  *                 Buyer_Phone:
- *                      type: number                 
+ *                      type: number
+ *          Product_id:
+ *             type: object
+ *             properties:
+ *                 Product_ID:
+ *                     type: string                 
  */
 
-
-// getting all record
-
-/**
- * @swagger
- * /buyer:
- *  get:
- *      summary: The get data from database  
- *      description: displaying all data from database
- *      responses:
- *          200:
- *              description: success fully displaying all data from database
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: array
- *                          items:
- *                              $ref: '#/components/schemas/Buyer'
- * 
- */ 
-BuyerRoute.get('/', verifyToken, async (req,res) => { 
-    const buyers =  await Buyer.find()
-    res.json(buyers)
-    
-})
 
 
 
@@ -94,7 +75,7 @@ BuyerRoute.post('/newUser', async (req,res) => {
         Buyer_Password: await bcrypt.hash(req.body.Buyer_Password,10),
         Buyer_Delivery_Address: req.body.Buyer_Delivery_Address,
         Buyer_Phone: req.body.Buyer_Phone,
-        // Buyer_Cart: req.body.Buyer_Cart
+        // Buyer_Cart: req.body.Buyer_Cart // array of objects only product id
     })
 
    
@@ -106,61 +87,61 @@ BuyerRoute.post('/newUser', async (req,res) => {
 /**
  * @swagger
  * /buyer/AddtoCart:
- *  get:
- *      summary: The get data from database  
- *      description: displaying all data from database
+ *  post:
+ *      summary: add the data in database  
+ *      description: Add the data in database
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Product_id'
  *      responses:
  *          200:
- *              description: success fully displaying all data from database
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: array
- *                          items:
- *                              $ref: '#/components/schemas/Buyer'             
+ *              description: Added Successfully             
  */ 
 
 
 
-BuyerRoute.get('/AddtoCart', verifyToken,async (req,res) => {
-   
-    
-    res.json(Buyer);
+BuyerRoute.post('/AddtoCart', verifyToken,async (req,res) => {
+    let buyer = await Buyer.findById(res.current_user.buyer_user._id)
+    buyer.Buyer_Cart.push(req.body.Product_ID)
+
+    const updatedbuyer = await buyer.save()
+    res.json(updatedbuyer); //.Buyer_Cart
     
 })
 
-// async function decodeToken(req,res,next){
-//     const bearerHeader = req.headers['authorization'];
-//     if(typeof bearerHeader !== 'undefined'){
-                
-//       const payload =  jwt.verify(bearerHeader,process.env.BUYER_ACCESS_TOKEN_SECRET,(err,authdata) =>{
-//             if(err){
-//                 res.json({result:err})
-//             }
-//             else{ 
-//                  
-//                 next()
-//             }
-//         })
+BuyerRoute.post("/Orders", verifyToken,async(req,res) =>{
+    let buyer = await Buyer.findById(res.current_user.buyer_user._id)
+    const order = new Orders({
+        // product_ID: buyer.Buyer_Cart,
+        Buyer_Email: req.body.Buyer_Email,
+        Buyer_Password: await bcrypt.hash(req.body.Buyer_Password,10),
+        Buyer_Delivery_Address: req.body.Buyer_Delivery_Address,
+        Buyer_Phone: req.body.Buyer_Phone,
+        // Buyer_Cart: req.body.Buyer_Cart // array of objects only product id
+    })
 
-//     }
-//     else{
-//         res.send({"result":"token not provided"})
-//     }
-// }
+
+})
+
 
 
 
 /*************************************************************************************************/
 async function verifyToken(req,res,next){
     const bearerHeader = req.headers['authorization'];
+    const bearer = bearerHeader.split(" ")[1];
+    const tokendecoder = bearerHeader.split(" ");
     if(typeof bearerHeader !== 'undefined'){
-        const bearer = bearerHeader.split(" ")[1];        
+                
         jwt.verify(bearer,process.env.BUYER_ACCESS_TOKEN_SECRET,(err,authdata) =>{
             if(err){
                 res.json({result:err})
             }
-            else{ 
+            else{
+                res.current_user = JSON.parse(Buffer.from(tokendecoder[1].split(".")[1], 'base64').toString());
                 next()
             }
         })

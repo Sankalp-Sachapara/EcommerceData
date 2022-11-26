@@ -140,7 +140,7 @@ app.post('/login', async (req,res) => {
     let seller_user = await Seller.findOne({Seller_Email :req.body.Email})
     let buyer_user = await Buyer.findOne({Buyer_Email :req.body.Email})
     
-    
+    if(buyer_user != null ){
     if (await bcrypt.compare(req.body.Password, buyer_user.Buyer_Password)) 
         {   
             
@@ -152,9 +152,9 @@ app.post('/login', async (req,res) => {
             refreshTokens.push(refreshToken)
             res.json ({accessToken: accessToken, refreshToken: refreshToken})
         } 
-    else if (await bcrypt.compare(req.body.Password, seller_user.Seller_Password)) {
-
-            
+    }
+    else if(seller_user != null ){
+        if (await bcrypt.compare(req.body.Password, seller_user.Seller_Password)) {
             //access token for seller
             const accessToken = jwt.sign({seller_user}, process.env.SELLER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
             //refresh token for buyer
@@ -163,6 +163,7 @@ app.post('/login', async (req,res) => {
             res.json ({accessToken: accessToken, refreshToken: refreshToken})
         
             }
+        }
     else if (buyer_user == null || seller_user == null) 
     {
         

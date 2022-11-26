@@ -25,6 +25,9 @@ const productsSchema = new mongoose.Schema({
     Category_Id:{
         type:String,
     },
+    Category_Name:{
+        type:String,
+    },
     seller_Id:{
         type:String,
     },

@@ -137,7 +137,7 @@ SellerRoute.post('/newUser', async (req,res) => {
         Seller_Password: await bcrypt.hash(req.body.Seller_Password,10),
         Seller_Address: req.body.Seller_Address,
         Seller_Phone: req.body.Seller_Phone,
-        Seller_Products: req.body.Seller_Products
+        // Seller_Products: req.body.Seller_Products
     })
 
     const newSeller = await seller.save()
@@ -165,6 +165,7 @@ SellerRoute.post('/newUser', async (req,res) => {
 
 
 SellerRoute.post('/newProduct',verifyToken, async (req,res) => {
+    // let seller = await Seller.findById()
     
     const product = new Products({
         Product_name: req.body.Product_name,
@@ -172,6 +173,8 @@ SellerRoute.post('/newProduct',verifyToken, async (req,res) => {
         Product_description: req.body.Product_description,
         Product_price: req.body.Product_price,
         Quantity_available: req.body.Quantity_available,
+        seller_Id: res.current_user.seller_user._id,
+        //res.current_user.seller_user._id // for current user access
         
     })
 
@@ -185,13 +188,16 @@ SellerRoute.post('/newProduct',verifyToken, async (req,res) => {
 
 async function verifyToken(req,res,next){
     const bearerHeader = req.headers['authorization'];
+    const bearer = bearerHeader.split(" ")[1];
+    const tokendecoder = bearerHeader.split(" ");
     if(typeof bearerHeader !== 'undefined'){
-        const bearer = bearerHeader.split(" ")[1];        
+                
         jwt.verify(bearer,process.env.SELLER_ACCESS_TOKEN_SECRET,(err,authdata) =>{
             if(err){
                 res.json({result:err})
             }
             else{ 
+                res.current_user = JSON.parse(Buffer.from(tokendecoder[1].split(".")[1], 'base64').toString());
                 next()
             }
         })
