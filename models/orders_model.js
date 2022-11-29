@@ -1,32 +1,27 @@
 const mongoose = require("mongoose")
+const productSchema = new mongoose.Schema({
+    product_id :{ type: String},
+    product_name: { type: String},
+    product_quantity_bought: {type: Number},
+    product_total_price: {type: Number},
+    product_seller_id: {type: String},
+    order_status:{
+        type: String
+    },
+})
 
 const orderSchema = new mongoose.Schema({
-    // order_name : {
-    //     type: String,
-    //     required : true
-
-    // },
-    product_ID:{
+    buyer_ID:{
+        type: String,
+        
+    },
+    product_list:[productSchema],
+   
+    total_price:{
         type: Number,
         
     },
-    // product_name : {
-    //     type: String,
-    //     required : true
-
-    // },
-    // product_price:{
-    //     type: Number,
-    //     required : true
-    // },
-    product_quantity_bought:{
-        type: Number,
-        
-    },
-    total_amount:{
-        type: Number,
-        
-    },
+    
     // payment_ID:{
     //     type: Number,
     //     required : true
@@ -35,14 +30,8 @@ const orderSchema = new mongoose.Schema({
     //     type: Number,
     //     required : true
     // },
-    buyer_ID:{
-        type: Number,
-        
-    },
-    seller_ID:{
-        type: Number,
-        
-    },
+    
+   
     // buyer_Delivery_Address: { 
     //     type: {
     //         address_line: {type: String} , 

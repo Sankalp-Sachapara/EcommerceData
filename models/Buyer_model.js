@@ -2,9 +2,8 @@ const mongoose = require("mongoose")
 
 const buyerCartSchema= new mongoose.Schema({ 
     Product_ID: {type: String}, 
-    // Product_Name: {type:String} , 
-    // Product_quantity: {type:Number}, 
-    // Product_Price: {type:Number} 
+    Product_quantity: {type:Number}, 
+    
 })
 
 const buyerSchema = new mongoose.Schema({

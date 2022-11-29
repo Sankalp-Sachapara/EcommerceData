@@ -50,66 +50,6 @@ const jwt = require("jsonwebtoken")
  */
 
 
-// getting all record
-
-/**
- * @swagger
- * /seller:
- *  get:
- *      summary: The get data from database  
- *      description: displaying all data from database
- *      responses:
- *          200:
- *              description: success fullydisplaying all data from database
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: array
- *                          items:
- *                              $ref: '#/components/schemas/Seller'
- * 
- */ 
-SellerRoute.get('/',verifyToken,async (req,res) => {
-    const seller =  await Seller.find()
-    res.json(seller)
-    
-})
-
-/**
- * @swagger
- * /seller/{id}:
- *  get:
- *      summary: The get specific id data from database  
- *      description: displaying all data from database
- *      parameters:
- *          - in: path
- *            name: id
- *            required: true
- *            description: fetch with id 
- *            schema:
- *              type: string
- *             
- *      responses:
- *          200:
- *              description: success fullydisplaying all data from database
- *              content:
- *                  application/json:
- *                      schema:
- *                          type: array
- *                          items:
- *                              $ref: '#/components/schemas/Seller'
- * 
- */ 
-
-// getting one record
-SellerRoute.get('/:id', verifyToken, async(req,res) => {
-    let seller = await Seller.findById(req.params.id)
-    if(seller == null){
-        return res.json({message : 'no seller'})
-    }
-    res.json(seller)  
-})
-
 /**
  * @swagger
  * /seller/newUser:

@@ -146,7 +146,7 @@ app.post('/login', async (req,res) => {
             
             
             //access token for buyer
-            const accessToken = jwt.sign({buyer_user}, process.env.BUYER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
+            const accessToken = jwt.sign({buyer_user}, process.env.BUYER_ACCESS_TOKEN_SECRET, {expiresIn: "60m"})
             //refresh token for seller
             const refreshToken = jwt.sign({buyer_user}, process.env.BUYER_REFRESH_TOKEN_SECRET, {expiresIn: "20m"})
             refreshTokens.push(refreshToken)
@@ -156,7 +156,7 @@ app.post('/login', async (req,res) => {
     else if(seller_user != null ){
         if (await bcrypt.compare(req.body.Password, seller_user.Seller_Password)) {
             //access token for seller
-            const accessToken = jwt.sign({seller_user}, process.env.SELLER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"})
+            const accessToken = jwt.sign({seller_user}, process.env.SELLER_ACCESS_TOKEN_SECRET, {expiresIn: "60m"})
             //refresh token for buyer
             const refreshToken = jwt.sign({seller_user}, process.env.SELLER_REFRESH_TOKEN_SECRET, {expiresIn: "20m"})
             refreshTokens.push(refreshToken)
