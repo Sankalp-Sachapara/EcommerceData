@@ -3,6 +3,7 @@ const express = require('express')
 const SellerRoute = express.Router()
 const Seller = require('../models/Seller_model')
 const Products = require('../models/Products_model')
+const Orders = require('../models/orders_model')
 const bcrypt = require ('bcrypt')
 const jwt = require("jsonwebtoken")
 
@@ -33,6 +34,11 @@ const jwt = require("jsonwebtoken")
  *                             type: string
  *                 Seller_Phone:
  *                      type: number
+ *          Order_id:
+ *             type: object
+ *             properties:
+ *                 ID:
+ *                     type: string
  *          Product:
  *             type: object
  *             properties:
@@ -46,7 +52,28 @@ const jwt = require("jsonwebtoken")
  *                     type: number
  *                 Quantity_available:
  *                     type: number
- *            
+ *          Orders:
+ *             type: object
+ *             properties:
+ *                 Buyer_ID:
+ *                     type: string
+ *                 Product_list:
+ *                     type: array
+ *                     items:
+ *                          type: object
+ *                          properties:
+ *                             Product_id:
+ *                                 type: string
+ *                             product_name:
+ *                                 type: string
+ *                             product_quantity_bought:
+ *                                 type: number
+ *                             product_total_price:
+ *                                 type: number   
+ *                             order_status:
+ *                                 type: string 
+ *                 total_price:
+ *                     type: number            
  */
 
 
@@ -121,6 +148,76 @@ SellerRoute.post('/newProduct',verifyToken, async (req,res) => {
     const newProduct = await product.save()
     res.json(newProduct);
     
+})
+/**
+ * @swagger
+ * /seller/productOrders:
+ *  get:
+ *      summary: Product data which has been ordered  
+ *      description: Product data which has been ordered
+ *      responses:
+ *          200:
+ *              description: success fully displaying  data from database
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: array
+ *                          items:
+ *                              $ref: '#/components/schemas/Orders'
+ * 
+ */ 
+
+SellerRoute.get('/productOrders',verifyToken, async (req,res) => {
+    let products = await Orders.find({"products_list.product_id": res.current_user.seller_user._id})
+    res.json(products)
+
+})
+/**
+ * @swagger
+ * /seller/acceptOrders:
+ *  post:
+ *      summary: for dispatching orders  
+ *      description: Enter the order id and dispatch orders 
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Order_id'
+ *                      
+ *      responses:
+ *          200:
+ *              description: Added Successfully
+ *              
+ */ 
+SellerRoute.post('/acceptOrders', verifyToken, async (req,res) =>{
+    let order = await Orders.findOneAndUpdate({_id: req.body.ID},{order_status: "Dispatched"},{new: true})
+    res.json(order)
+})
+
+
+/**
+ * @swagger
+ * /seller/deliverOrders:
+ *  post:
+ *      summary: for dispatching orders  
+ *      description: Enter the order id and dispatch orders 
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Order_id'
+ *                      
+ *      responses:
+ *          200:
+ *              description: Added Successfully
+ *              
+ */ 
+
+SellerRoute.post('/deliverOrders', verifyToken, async (req,res) =>{
+    let order = await Orders.findOneAndUpdate({_id: req.body.ID},{order_status: "Delivered"},{new: true})
+    res.json(order)
 })
 
 

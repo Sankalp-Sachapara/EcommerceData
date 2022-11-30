@@ -5,9 +5,7 @@ const productSchema = new mongoose.Schema({
     product_quantity_bought: {type: Number},
     product_total_price: {type: Number},
     product_seller_id: {type: String},
-    order_status:{
-        type: String
-    },
+    
 })
 
 const orderSchema = new mongoose.Schema({
@@ -20,6 +18,9 @@ const orderSchema = new mongoose.Schema({
     total_price:{
         type: Number,
         
+    },
+    order_status:{
+        type: String
     },
     
     // payment_ID:{

@@ -35,6 +35,11 @@ const jwt = require("jsonwebtoken")
  *                             type: string
  *                 Buyer_Phone:
  *                      type: number
+ *          Order_id:
+ *             type: object
+ *             properties:
+ *                 ID:
+ *                     type: string 
  *          Product_id:
  *             type: object
  *             properties:
@@ -62,10 +67,11 @@ const jwt = require("jsonwebtoken")
  *                                 type: number   
  *                             product_seller_id:
  *                                 type: string
- *                             order_status:
- *                                 type: string 
+ *                             
  *                 total_price:
- *                     type: number             
+ *                     type: number
+ *                 order_status:
+ *                     type: string              
  */
 
 
@@ -123,9 +129,21 @@ BuyerRoute.post('/newUser', async (req,res) => {
 
 BuyerRoute.post('/AddtoCart', verifyToken,async (req,res) => {
     let buyer = await Buyer.findById(res.current_user.buyer_user._id)
-    buyer.Buyer_Cart.push(req.body)
+    if (buyer.Buyer_Cart.findIndex( e =>
+        {
+            if(e.Product_ID == req.body.Product_ID)
+            {
+                e.Product_quantity += req.body.Product_quantity
+            }
+            
+        }
+        )){}
+        else{
+            buyer.Buyer_Cart.push(req.body)
+        }
+    
     const updatedbuyer = await buyer.save()
-    res.json(updatedbuyer); //.Buyer_Cart
+    res.json(updatedbuyer); 
     
 })
 
@@ -147,10 +165,10 @@ BuyerRoute.post('/AddtoCart', verifyToken,async (req,res) => {
  */ 
 
 BuyerRoute.get("/Orders", verifyToken,async(req,res) =>{
-    let buyer = await Buyer.findById(res.current_user.buyer_user._id)
-    let e = await Promise.all(buyer.Buyer_Cart.map(prodObj => Products.findById(prodObj.Product_ID)))
+    let buyer = await Buyer.findById(res.current_user.buyer_user._id) // gets current users info
+    let e = await Promise.all(buyer.Buyer_Cart.map(prodObj => Products.findById(prodObj.Product_ID))) // finds products info from the products in the buyers cart and place the found products in an array
     let d_product = e.map(prod => {
-        const indi_price_total = buyer.Buyer_Cart.find(obj => obj.Product_ID == prod._id)
+        const indi_price_total = buyer.Buyer_Cart.find(obj => obj.Product_ID == prod._id)       //restructuring the found products 
         product_quantity = indi_price_total.Product_quantity
         if (product_quantity <= prod.Quantity_available){
         product_price_quantity = indi_price_total.Product_quantity * prod.Product_price
@@ -161,21 +179,22 @@ BuyerRoute.get("/Orders", verifyToken,async(req,res) =>{
                 product_quantity_bought: product_quantity,
                 product_total_price: product_price_quantity,
                 product_seller_id: prod.seller_Id,
-                order_status: "Approved"
+                
             }
         }
         else{
-            return "Not sufficent quatity available at the moment"
+            return "Not sufficent quantity available at the moment"
         }
     })
     
-    total_productprice = d_product.reduce((a,b) => a + b['product_total_price'],0)
+    total_productprice = d_product.reduce((a,b) => a + b['product_total_price'],0)  // total sum of all prices in restructered products array
 
     
-    let order = new Orders({
+    let order = new Orders({            // new order for Orders 
         buyer_ID:buyer._id,
         product_list: d_product,
         total_price: total_productprice,
+        order_status: "Approved",
         
     })
     const neworder = await order.save()
@@ -200,6 +219,30 @@ BuyerRoute.get("/Orders", verifyToken,async(req,res) =>{
 */
 BuyerRoute.get("/OrderStatus", verifyToken,async(req,res) => {
     let order = await Orders.find({buyer_ID : res.current_user.buyer_user._id})
+    res.json(order)
+})
+
+/**
+ * @swagger
+ * /buyer/cancelOrders:
+ *  post:
+ *      summary: for dispatching orders  
+ *      description: Enter the order id and dispatch orders 
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Order_id'
+ *                      
+ *      responses:
+ *          200:
+ *              description: Added Successfully
+ *              
+ */
+
+BuyerRoute.post("/cancelOrders", verifyToken,async(req,res) => {
+    let order = await Orders.findOneAndUpdate({_id: req.body.ID},{order_status: "Cancelled"},{new: true})
     res.json(order)
 })
 
