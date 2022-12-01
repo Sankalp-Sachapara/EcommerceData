@@ -1,5 +1,27 @@
 const mongoose = require("mongoose")
 
+const productratingschema= new mongoose.Schema({
+    ID:{
+        type: String
+    },
+    Product_ID:{
+        type: String,
+    },
+
+    Product_rating:{
+    type: Number,
+    min: 1,
+    max:5,
+    default: null,
+    },
+    Product_description:{
+        type: String,
+        default: null,
+    },
+    
+})
+
+    
 
 const productsSchema = new mongoose.Schema({
     Product_name : {
@@ -35,11 +57,8 @@ const productsSchema = new mongoose.Schema({
         type: String,
         
     },
-    Product_rating : {
-        type: Number,
-        min: 1,
-        max:5,
-    },
+    Product_rating : [productratingschema],
+    
 
 
 })

@@ -81,7 +81,7 @@ const jwt = require("jsonwebtoken")
  * @swagger
  * /seller/newUser:
  *  post:
- *      summary: add the data in database  
+ *      summary: Registering new user  
  *      description: Add the data in database warning while adding poducts array do not add "," on last object or there will be an error
  *      requestBody:
  *          required: true
@@ -200,8 +200,8 @@ SellerRoute.post('/acceptOrders', verifyToken, async (req,res) =>{
  * @swagger
  * /seller/deliverOrders:
  *  post:
- *      summary: for dispatching orders  
- *      description: Enter the order id and dispatch orders 
+ *      summary: for delivering orders  
+ *      description: Enter the order id and deliver orders 
  *      requestBody:
  *          required: true
  *          content:

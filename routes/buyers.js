@@ -46,7 +46,19 @@ const jwt = require("jsonwebtoken")
  *                 Product_ID:
  *                     type: string
  *                 Product_quantity:
- *                     type: number 
+ *                     type: number
+ *          Rating:
+ *             type: object
+ *             properties:
+ *                 ID:
+ *                     type: string
+ *                 Product_ID:
+ *                     type: string
+ *                 Product_rating:
+ *                     $ref: '#/components/parameters/limitParam'
+ *                     
+ *                 Product_description:
+ *                     type: string 
  *          Orders:
  *             type: object
  *             properties:
@@ -71,7 +83,18 @@ const jwt = require("jsonwebtoken")
  *                 total_price:
  *                     type: number
  *                 order_status:
- *                     type: string              
+ *                     type: string
+ *      parameters: 
+ *        limitParam:       
+ *           name: limit
+ *           in: query
+ *           description: Range of rating.
+ *           required: false
+ *           schema:
+ *             type: integer
+ *             format: int32
+ *             minimum: 1
+ *             maximum: 5              
  */
 
 
@@ -79,8 +102,8 @@ const jwt = require("jsonwebtoken")
  * @swagger
  * /buyer/newUser:
  *  post:
- *      summary: add the data in database  
- *      description: Add the data in database
+ *      summary: Registering new user   
+ *      description: Add the new user data in database
  *      requestBody:
  *          required: true
  *          content:
@@ -112,8 +135,8 @@ BuyerRoute.post('/newUser', async (req,res) => {
  * @swagger
  * /buyer/AddtoCart:
  *  post:
- *      summary: add the data in database  
- *      description: Add the data in database
+ *      summary: Add the product to current buyers cart  
+ *      description: Add the product data in current buyer's cart 
  *      requestBody:
  *          required: true
  *          content:
@@ -151,8 +174,8 @@ BuyerRoute.post('/AddtoCart', verifyToken,async (req,res) => {
  * @swagger
  * /buyer/Orders:
  *  get:
- *      summary: The get data from database  
- *      description: displaying all data from database
+ *      summary: To place order  
+ *      description: To place order call it and the current buyer cart will place its order
  *      responses:
  *          200:
  *              description: success fully displaying all data from database
@@ -205,8 +228,8 @@ BuyerRoute.get("/Orders", verifyToken,async(req,res) =>{
  * @swagger
  * /buyer/OrderStatus:
  *  get:
- *      summary: The get data from database  
- *      description: displaying all data from database
+ *      summary: To know the status of the order placed  
+ *      description: To know the status of the order placed
  *      responses:
  *          200:
  *              description: success fully displaying all data from database
@@ -221,13 +244,60 @@ BuyerRoute.get("/OrderStatus", verifyToken,async(req,res) => {
     let order = await Orders.find({buyer_ID : res.current_user.buyer_user._id})
     res.json(order)
 })
+/**
+ * @swagger
+ * /buyer/ratingProduct:
+ *  post:
+ *      summary: for Rating the delivered product 
+ *      description: for Rating the delivered product  
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/Rating'
+ *                      
+ *      responses:
+ *          200:
+ *              description: Added Successfully
+ *              
+ */
+
+BuyerRoute.post("/ratingProduct",verifyToken,async(req,res) => {
+    let check_order = await Orders.findById(req.body.ID)
+    let product = await Products.findById(req.body.Product_ID)
+    
+    if(check_order.order_status == "Delivered"){
+        if (product != null || product != undefined){
+            let B = req.body
+            product.Product_rating.push(B)
+            let updateproduct = await product.save()
+            res.json(updateproduct)
+        }
+        else{
+            res.json({result: "enter the correct product id"})
+        }
+        
+    }
+    else if(check_order.order_status == "Approved" || check_order.order_status == "Dispatched"){
+        res.json({result: "Order has been not been delivered yet "})
+    }
+    else if(check_order.order_status == "Cancelled"){
+        res.json({result: "Order Was Cancelled so cant rate the product "})
+    }
+    else{
+        res.json({result: "Wrong id's entered, try again "})
+    }
+    
+
+})
 
 /**
  * @swagger
  * /buyer/cancelOrders:
  *  post:
- *      summary: for dispatching orders  
- *      description: Enter the order id and dispatch orders 
+ *      summary: To cancel a order  
+ *      description: To cancel a order 
  *      requestBody:
  *          required: true
  *          content:
@@ -242,8 +312,15 @@ BuyerRoute.get("/OrderStatus", verifyToken,async(req,res) => {
  */
 
 BuyerRoute.post("/cancelOrders", verifyToken,async(req,res) => {
-    let order = await Orders.findOneAndUpdate({_id: req.body.ID},{order_status: "Cancelled"},{new: true})
-    res.json(order)
+    let check_order = await Orders.findById(req.body.ID)
+    if (check_order.order_status == "Approved" || check_order.order_status == "Dispatched"){
+        let order = await Orders.findOneAndUpdate({_id: req.body.ID},{order_status: "Cancelled"},{new: true})
+        res.json(order)
+    }
+    else if(check_order.order_status == "Delivered"){
+        res.json({result: "Order has been Delivered cannot cancel now"})
+    }
+
 })
 
 
