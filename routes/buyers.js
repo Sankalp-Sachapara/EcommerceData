@@ -59,6 +59,19 @@ const jwt = require("jsonwebtoken")
  *                     
  *                 Product_description:
  *                     type: string 
+ *          Product_S:
+ *             type: object
+ *             properties:
+ *                 Product_name:
+ *                     type: string
+ *                 Product_description:
+ *                     type: string
+ *                 Product_price:
+ *                     type: number
+ *                 Quantity_available:
+ *                     type: number
+ *                 Product_rating:
+ *                     $ref: '#/components/schemas/Rating' 
  *          Orders:
  *             type: object
  *             properties:
@@ -152,21 +165,41 @@ BuyerRoute.post('/newUser', async (req,res) => {
 
 BuyerRoute.post('/AddtoCart', verifyToken,async (req,res) => {
     let buyer = await Buyer.findById(res.current_user.buyer_user._id)
+    let product = await Products.findById(req.body.Product_ID)
+    if (product !== null){
+    
+    if(buyer.Buyer_Cart.length == 0){
+        buyer.Buyer_Cart.push(req.body)
+        const updatedbuyer = await buyer.save()
+        res.json(updatedbuyer);
+    }
+    else{
     if (buyer.Buyer_Cart.findIndex( e =>
         {
             if(e.Product_ID == req.body.Product_ID)
             {
                 e.Product_quantity += req.body.Product_quantity
             }
+            else{
+                buyer.Buyer_Cart.push(req.body)
+                
+            }
             
         }
-        )){}
-        else{
-            buyer.Buyer_Cart.push(req.body)
-        }
+        )){
+            const updatedbuyer = await buyer.save()
+            res.json(updatedbuyer); }
+    else{
+        res.json({result: "Incorrect Product Id PLease enter correct ID"})
+
+    }
+        
+} 
+}
+else{
+    res.json({result:" product not found"})
+}
     
-    const updatedbuyer = await buyer.save()
-    res.json(updatedbuyer); 
     
 })
 
@@ -321,6 +354,59 @@ BuyerRoute.post("/cancelOrders", verifyToken,async(req,res) => {
         res.json({result: "Order has been Delivered cannot cancel now"})
     }
 
+})
+
+/**
+ * @swagger
+ * /buyer/searchProducts/{Product_name}:
+ *  get:
+ *      summary: For Searching a product  
+ *      description: For Searching a product from product collection
+ *      parameters:
+ *          - name: Product_name
+ *            in: query
+ *            description: fetch with Product name
+ *            schema:
+ *              type: string
+ *          - name: page
+ *            in: query
+ *            description: page number you want to go
+ *            schema:
+ *              type: number 
+ *                      
+ *      responses:
+ *          200:
+ *              description: updated Successfully
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: array
+ *                          items:
+ *                              $ref: '#/components/schemas/Product_S'
+ *              
+ */
+
+BuyerRoute.get("/searchProducts/:Product_name", verifyToken,async(req,res) =>{
+    let search = req.query.Product_name
+    let page = 1
+    if(req.query.page){
+        page = req.query.page
+    }
+    let limit = 3
+    
+    let products = await Products.find({Product_name:{$regex:'.*' + search + '.*',$options:'i'}})
+    .limit(limit * 1)
+    .skip((page -1) * limit)
+    .exec();
+
+    let count = await Products.find({Product_name:{$regex:'.*' + search + '.*',$options:'i'}})
+    .countDocuments();
+    let totalPages = Math.ceil(count/limit)
+    let currentPage = page
+    res.json({
+        SearchResult:products,
+        TotalPages: totalPages,
+        currentPage: parseInt(currentPage)})
 })
 
 

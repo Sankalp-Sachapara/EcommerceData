@@ -21,6 +21,26 @@ const productratingschema= new mongoose.Schema({
     
 })
 
+const productCategorySchema = new mongoose.Schema({
+    category_name : {
+        type: String,
+        required: true,
+    },
+    sub_category : {
+        type: { 
+            Sub_name: {
+                type: String
+            }, 
+            Sub_Desc: {
+                type: String
+            },
+        },
+    },
+    category_description: {
+        type: String,
+    },
+})
+
     
 
 const productsSchema = new mongoose.Schema({
@@ -28,10 +48,7 @@ const productsSchema = new mongoose.Schema({
         type: String,
         
     },
-    Product_category: { // change
-        type: String,
-        
-    },
+    Product_category: [productCategorySchema],
     Product_description: {
         type: String,
         
@@ -44,12 +61,6 @@ const productsSchema = new mongoose.Schema({
         type: Number,
         
     },
-    Category_Id:{
-        type:String,
-    },
-    Category_Name:{
-        type:String,
-    },
     seller_Id:{
         type:String,
     },
@@ -59,8 +70,6 @@ const productsSchema = new mongoose.Schema({
     },
     Product_rating : [productratingschema],
     
-
-
 })
 
 module.exports = mongoose.model('Products',productsSchema)

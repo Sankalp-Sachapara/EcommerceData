@@ -99,13 +99,27 @@ app.get('/', async (req,res) => {
  *                     type: string
  *                 Password:
  *                      type: string
- *          Product:
+ *          Product_info:
  *             type: object
  *             properties:
  *                 Product_name:
  *                     type: string
  *                 Product_description:
  *                     type: string
+ *                 Product_category:
+ *                     type: object
+ *                     properties:
+ *                         category_name:
+ *                             type: string
+ *                         caterogy_description:
+ *                             type: string 
+ *                         sub_category:
+ *                             type: object
+ *                             properties:
+ *                                 Sub_name:
+ *                                     type: string
+ *                                 Sub_Desc:
+ *                                     type: string
  *                 Product_price:
  *                     type: number
  *                 Product_rating:
@@ -189,7 +203,7 @@ app.post('/login', async (req,res) => {
  *                      schema:
  *                          type: array
  *                          items:
- *                              $ref: '#/components/schemas/Product'
+ *                              $ref: '#/components/schemas/Product_info'
  * 
  */ 
 
@@ -198,27 +212,6 @@ app.get('/products', async (req,res) => {
     res.json(p)
     
 })
-
-/**
- * @swagger
- * /logout:
- *  delete:
- *      summary: logout  
- *      description: delete refresh token and the current user data
- *      responses:
- *          200:
- *              description: successfully  deleted
- *              
- * 
- */ 
-
-app.delete("/logout", (req,res)=>{
-    refreshTokens = refreshTokens.filter( (c) => c != req.body.token)
-    currentuser = currentuser.filter( (c) => c != req.body)
-    res.status(204).send("Logged out!")
-    })
-
-
 
 
 app.listen(port, () => console.log("Server Started"))

@@ -46,9 +46,21 @@ const jwt = require("jsonwebtoken")
  *                     type: string
  *                 Product_description:
  *                     type: string
+ *                 Product_category:
+ *                     type: object
+ *                     properties:
+ *                         category_name:
+ *                             type: string
+ *                         caterogy_description:
+ *                             type: string 
+ *                         sub_category:
+ *                             type: object
+ *                             properties:
+ *                                 Sub_name:
+ *                                     type: string
+ *                                 Sub_Desc:
+ *                                     type: string
  *                 Product_price:
- *                     type: number
- *                 Product_rating:
  *                     type: number
  *                 Quantity_available:
  *                     type: number
@@ -225,6 +237,7 @@ SellerRoute.post('/deliverOrders', verifyToken, async (req,res) =>{
 
 async function verifyToken(req,res,next){
     const bearerHeader = req.headers['authorization'];
+    
     const bearer = bearerHeader.split(" ")[1];
     const tokendecoder = bearerHeader.split(" ");
     if(typeof bearerHeader !== 'undefined'){
